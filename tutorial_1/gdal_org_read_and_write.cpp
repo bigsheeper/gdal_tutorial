@@ -1,6 +1,5 @@
 #include <iostream>
 #include <ogrsf_frmts.h>
-#include <gdal_utils.h>
 
 
 void ReadingFromOGR() {
@@ -15,7 +14,7 @@ void ReadingFromOGR() {
     // On failure NULL is returned, and we report an error.
     GDALDataset *poDS;
 
-    poDS = (GDALDataset *) GDALOpenEx("point_out.shp", GDAL_OF_VECTOR, NULL, NULL, NULL);
+    poDS = (GDALDataset *) GDALOpenEx("point.shp", GDAL_OF_VECTOR, NULL, NULL, NULL);
     if (poDS == NULL) {
         printf("Open failed.\n");
         exit(1);
@@ -26,7 +25,7 @@ void ReadingFromOGR() {
     // However, we will just fetch the layer by name.
     OGRLayer *poLayer;
 
-    poLayer = poDS->GetLayerByName("point_out");
+    poLayer = poDS->GetLayerByName("point");
 
     // 4.Now we want to start reading features from the layer.
     // Before we start we could assign an attribute or spatial filter to the layer to restrict the set of feature we get back, but for now we are interested in getting all features.
@@ -110,7 +109,7 @@ void WritingToOGR() {
     // The last argument to the call is a list of option values, but we will just be using defaults in this case. Details of the options supported are also format specific.
     GDALDataset *poDS;
 
-    poDS = poDriver->Create("point_out.shp", 0, 0, 0, GDT_Unknown, NULL);
+    poDS = poDriver->Create("point.shp", 0, 0, 0, GDT_Unknown, NULL);
     if (poDS == NULL) {
         printf("Creation of output file failed.\n");
         exit(1);
@@ -122,7 +121,7 @@ void WritingToOGR() {
     // In this case we aren’t passing any coordinate system information or other special layer creation options.
     OGRLayer *poLayer;
 
-    poLayer = poDS->CreateLayer("point_out", NULL, wkbPoint, NULL);
+    poLayer = poDS->CreateLayer("point", NULL, wkbPoint, NULL);
     if (poLayer == NULL) {
         printf("Layer creation failed.\n");
         exit(1);
@@ -186,7 +185,7 @@ void WritingToOGR() {
 
 
 int main() {
-//    WritingToOGR();
-//    ReadingFromOGR();
+    WritingToOGR();
+    ReadingFromOGR();
     return 0;
 }
