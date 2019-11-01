@@ -14,9 +14,7 @@ void Translate() {
 
     char** papszArgv = nullptr;
 
-    // Spatial query extents, in the SRS of the source layer(s) (or the one specified with -spat_srs).
-    // Only features whose geometry intersects the extents will be selected.
-    // The geometries will not be clipped unless -clipsrc is specified.
+    // Clip input layer with a bounding box.
     // argv: -spat <xmin> <ymin> <xmax> <ymax>
     papszArgv = CSLAddString(papszArgv, "-spat");
     papszArgv = CSLAddString(papszArgv, "0");
@@ -32,13 +30,13 @@ void Translate() {
         printf("Translate failed.\n");
         exit(1);
     }
-
     auto poLayer = ((GDALDataset *)outDS)->GetLayerByName("point_translate");
 
     OGRFeature *poFeature;
     poLayer->ResetReading();
     while ((poFeature = poLayer->GetNextFeature()) != NULL) {
         auto poGeometry = poFeature->GetGeometryRef();
+        std::string po_json = poGeometry->exportToJson();
         if (poGeometry != NULL && wkbFlatten(poGeometry->getGeometryType()) == wkbPoint) {
             auto poPoint = poGeometry->toPoint();
             std::cout << poGeometry->getGeometryName() << "[ " << poPoint->getX() << ", " << poPoint->getY() << " ]" << std::endl;
