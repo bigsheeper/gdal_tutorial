@@ -9,6 +9,12 @@
 
 #include "stb_image_write.h"
 
+struct BoundBox {
+    double longitude_left;
+    double latitude_left;
+    double longitude_right;
+    double latitude_right;
+};
 
 class GeoHandler {
  public:
@@ -18,15 +24,12 @@ class GeoHandler {
  public:
     int width_;
     int height_;
-    double longitude_left_;
-    double longitude_right_;
-    double latitude_left_;
-    double latitude_right_;
+    BoundBox bound_box_;
 };
 
 int GeoHandler::DiscreteTransX(double longitude) {
-    double x_left = longitude_left_ * 111319.490778;
-    double x_right = longitude_right_ * 111319.490778;
+    double x_left = bound_box_.longitude_left * 111319.490778;
+    double x_right = bound_box_.longitude_right * 111319.490778;
     double x_pos = longitude * 111319.490778;
     int ret = (int) (((x_pos - x_left) / (x_right - x_left)) * width_ - 1E-9);
     if (ret < 0) ret = 0;
@@ -36,8 +39,8 @@ int GeoHandler::DiscreteTransX(double longitude) {
 
 
 int GeoHandler::DiscreteTransY(double latitude) {
-    double y_left = 6378136.99911 * log(tan(.00872664626 * latitude_left_ + .785398163397));
-    double y_right = 6378136.99911 * log(tan(.00872664626 * latitude_right_ + .785398163397));
+    double y_left = 6378136.99911 * log(tan(.00872664626 * bound_box_.latitude_left + .785398163397));
+    double y_right = 6378136.99911 * log(tan(.00872664626 * bound_box_.latitude_right + .785398163397));
     double y_pos = 6378136.99911 * log(tan(.00872664626 * latitude + .785398163397));
     int ret = (int) (((y_pos - y_left) / (y_right - y_left)) * height_ - 1E-9);
     if (ret < 0) ret = 0;
@@ -45,9 +48,12 @@ int GeoHandler::DiscreteTransY(double latitude) {
     return ret;
 }
 
-
-class QingDao {
+class CityGeo {
  public:
+    void Init();
+
+    void Translate();
+
     void Read();
 
  public:
@@ -57,19 +63,55 @@ class QingDao {
  public:
     std::string file_path_;
     OGRMultiPolygon buildings_;
+    BoundBox bound_box_;
 };
 
-
-void QingDao::Read() {
+void CityGeo::Init() {
     GDALAllRegister();
+}
 
-    auto poDS = GDALOpenEx(file_path_.c_str(), GDAL_OF_VECTOR, nullptr, nullptr, nullptr);
+void CityGeo::Translate() {
+
+    auto poDS = GDALOpenEx(file_path_.c_str(), GDAL_OF_VECTOR, NULL, NULL, NULL);
+    if (poDS == NULL) {
+        printf("Open failed.\n");
+        exit(1);
+    }
+
+    char** papszArgv = nullptr;
+
+    // Clip input layer with a bounding box.
+    // argv: -spat <xmin> <ymin> <xmax> <ymax>
+    papszArgv = CSLAddString(papszArgv, "-spat");
+    papszArgv = CSLAddString(papszArgv, std::to_string(bound_box_.longitude_left).c_str());
+    papszArgv = CSLAddString(papszArgv, std::to_string(bound_box_.latitude_left).c_str());
+    papszArgv = CSLAddString(papszArgv, std::to_string(bound_box_.longitude_right).c_str());
+    papszArgv = CSLAddString(papszArgv, std::to_string(bound_box_.latitude_right).c_str());
+
+    auto psOptions = GDALVectorTranslateOptionsNew(papszArgv, nullptr);
+    std::string pszDest = "/tmp/tmp.shp";
+    auto outDS = GDALVectorTranslate(pszDest.c_str(), nullptr, 1, &poDS, psOptions, nullptr);
+
+    if (outDS == NULL) {
+        printf("Translate failed.\n");
+        exit(1);
+    }
+
+    GDALVectorTranslateOptionsFree(psOptions);
+    GDALClose(poDS);
+    GDALClose(outDS);
+}
+
+
+void CityGeo::Read() {
+
+    auto poDS = GDALOpenEx("/tmp/tmp.shp", GDAL_OF_VECTOR, nullptr, nullptr, nullptr);
     if (poDS == nullptr) {
         printf("Open failed.\n");
         exit(1);
     }
 
-    auto poLayer = ((GDALDataset *) poDS)->GetLayerByName("qingdao");
+    auto poLayer = ((GDALDataset *) poDS)->GetLayer(0);
 
     OGRFeature *poFeature;
     poLayer->ResetReading();
@@ -78,6 +120,11 @@ void QingDao::Read() {
         if (poGeometry != nullptr && wkbFlatten(poGeometry->getGeometryType()) == wkbPolygon) {
             auto poPolygon = poGeometry->toPolygon();
             buildings_.addGeometry(poPolygon);
+        } else if (poGeometry != nullptr && wkbFlatten(poGeometry->getGeometryType()) == wkbMultiPolygon) {
+            auto multiPolygon = poGeometry->toMultiPolygon();
+            for (auto polygon : multiPolygon) {
+                buildings_.addGeometry(polygon);
+            }
         } else {
             printf("no geometry\n");
         }
@@ -111,6 +158,8 @@ class Window2D {
  public:
     std::string output_path_;
     unsigned char *buffer_;
+    OGRMultiPolygon buildings_;
+    BoundBox bound_box_;
 };
 
 void Window2D::Init() {
@@ -159,18 +208,11 @@ void Window2D::Init() {
 }
 
 void Window2D::Render() {
-    QingDao qing_dao;
-    qing_dao.file_path_ = "../tutorial_2/qingdao_part.geojson";
-    qing_dao.Read();
-    auto &buildings = qing_dao.buildings();
 
     GeoHandler geo_handler;
     geo_handler.width_ = width_;
     geo_handler.height_ = height_;
-    geo_handler.longitude_left_ = 120.402537;
-    geo_handler.longitude_right_ = 120.42221;
-    geo_handler.latitude_left_ = 36.115251;
-    geo_handler.latitude_right_ = 36.124129;
+    geo_handler.bound_box_ = bound_box_;
 
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -180,7 +222,7 @@ void Window2D::Render() {
     glColor4f(0.0, 0.0, 1.0, 1.0);
     glEnableClientState(GL_VERTEX_ARRAY);
 
-    for (auto &building : buildings) {
+    for (auto &building : buildings_) {
         auto ring = building->getExteriorRing();
         auto size = ring->getNumPoints();
         auto points = (OGRRawPoint *)malloc(sizeof(OGRPoint) * size);
@@ -213,17 +255,33 @@ void Window2D::Output() {
 }
 
 int main() {
+    BoundBox bound_box{-73.984957,40.72946  ,  -73.96399,40.738562};
+    std::string file_path = "/home/sheep/Downloads/nyc_building/nyc_building.geojson";
+    float width = 1900;
+    float height = 1410;
+    std::string output_path = "offscreen.png";
+
+
+    CityGeo city_geo;
+    city_geo.file_path_ = file_path;
+    city_geo.bound_box_ = bound_box;
+    city_geo.Init();
+    city_geo.Translate();
+    city_geo.Read();
 
     Window2D window_2d;
-    window_2d.width_ = 1900;
-    window_2d.height_ = 1410;
+    window_2d.width_ = width;
+    window_2d.height_ = height;
+    window_2d.bound_box_ = bound_box;
+
+    window_2d.buildings_ = city_geo.buildings();
 
     window_2d.Init();
     window_2d.Render();
     window_2d.Finalize();
     window_2d.Terminate();
 
-    window_2d.output_path_ = "offscreen.png";
+    window_2d.output_path_ = output_path;
     window_2d.Output();
     return 0;
 }
