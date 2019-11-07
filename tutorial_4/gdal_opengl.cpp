@@ -79,7 +79,7 @@ void CityGeo::Translate() {
     }
 
     char** papszArgv = nullptr;
-
+    std::string shape_type = "ESRI Shapefile";
     // Clip input layer with a bounding box.
     // argv: -spat <xmin> <ymin> <xmax> <ymax>
     papszArgv = CSLAddString(papszArgv, "-spat");
@@ -87,6 +87,8 @@ void CityGeo::Translate() {
     papszArgv = CSLAddString(papszArgv, std::to_string(bound_box_.latitude_left).c_str());
     papszArgv = CSLAddString(papszArgv, std::to_string(bound_box_.longitude_right).c_str());
     papszArgv = CSLAddString(papszArgv, std::to_string(bound_box_.latitude_right).c_str());
+    papszArgv = CSLAddString(papszArgv, "-f");
+    papszArgv = CSLAddString(papszArgv, shape_type.c_str());
 
     auto psOptions = GDALVectorTranslateOptionsNew(papszArgv, nullptr);
     std::string pszDest = "/tmp/tmp.shp";
@@ -100,6 +102,7 @@ void CityGeo::Translate() {
     GDALVectorTranslateOptionsFree(psOptions);
     GDALClose(poDS);
     GDALClose(outDS);
+    CSLDestroy(papszArgv);
 }
 
 
@@ -227,13 +230,29 @@ void Window2D::Render() {
         auto size = ring->getNumPoints();
         auto points = (OGRRawPoint *)malloc(sizeof(OGRPoint) * size);
         ring->getPoints(points);
+        glBegin(GL_POLYGON);
         for (int i = 0; i < size; i++) {
-            points[i].x = geo_handler.DiscreteTransX(points[i].x);
-            points[i].y = geo_handler.DiscreteTransY(points[i].y);
+            auto x = geo_handler.DiscreteTransX(points[i].x);
+            auto y = geo_handler.DiscreteTransY(points[i].y);
+            if(x ==0 || x == 1899 || y == 0 || y == 1409)
+                break;
+            glVertex2d(x, y);
         }
-        glVertexPointer(2, GL_DOUBLE, 0, (double *) points);
-        glDrawArrays(GL_POLYGON, 0, size);
+        glEnd();
     }
+
+//    for (auto &building : buildings_) {
+//        auto ring = building->getExteriorRing();
+//        auto size = ring->getNumPoints();
+//        auto points = (OGRRawPoint *)malloc(sizeof(OGRPoint) * size);
+//        ring->getPoints(points);
+//        for (int i = 0; i < size; i++) {
+//            points[i].x = geo_handler.DiscreteTransX(points[i].x);
+//            points[i].y = geo_handler.DiscreteTransY(points[i].y);
+//        }
+//        glVertexPointer(2, GL_DOUBLE, 0, (double *) points);
+//        glDrawArrays(GL_POLYGON, 0, size);
+//    }
 }
 
 void Window2D::Finalize() {
@@ -255,7 +274,7 @@ void Window2D::Output() {
 }
 
 int main() {
-    BoundBox bound_box{-73.984957,40.72946  ,  -73.96399,40.738562};
+    BoundBox bound_box{-74.01695, 40.701673, -73.97243, 40.722044};
     std::string file_path = "/home/sheep/Downloads/nyc_building/nyc_building.geojson";
     float width = 1900;
     float height = 1410;
