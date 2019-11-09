@@ -234,25 +234,12 @@ void Window2D::Render() {
         for (int i = 0; i < size; i++) {
             auto x = geo_handler.DiscreteTransX(points[i].x);
             auto y = geo_handler.DiscreteTransY(points[i].y);
-            if(x ==0 || x == 1899 || y == 0 || y == 1409)
+            if(x == 0 || x == width_ - 1 || y == 0 || y == height_ - 1)
                 break;
             glVertex2d(x, y);
         }
         glEnd();
     }
-
-//    for (auto &building : buildings_) {
-//        auto ring = building->getExteriorRing();
-//        auto size = ring->getNumPoints();
-//        auto points = (OGRRawPoint *)malloc(sizeof(OGRPoint) * size);
-//        ring->getPoints(points);
-//        for (int i = 0; i < size; i++) {
-//            points[i].x = geo_handler.DiscreteTransX(points[i].x);
-//            points[i].y = geo_handler.DiscreteTransY(points[i].y);
-//        }
-//        glVertexPointer(2, GL_DOUBLE, 0, (double *) points);
-//        glDrawArrays(GL_POLYGON, 0, size);
-//    }
 }
 
 void Window2D::Finalize() {
@@ -270,12 +257,15 @@ void Window2D::Terminate() {
 }
 
 void Window2D::Output() {
-    stbi_write_png(output_path_.c_str(), width_, height_, 4, buffer_, width_ * 4);
+    auto pixels = buffer_ + (int) (width_ * 4 * (height_ - 1));
+    auto stride_bytes = -(width_ * 4);
+    stbi_write_png(output_path_.c_str(), width_, height_, 4, pixels, stride_bytes);
 }
 
 int main() {
     BoundBox bound_box{-74.01695, 40.701673, -73.97243, 40.722044};
-    std::string file_path = "/home/sheep/Downloads/nyc_building/nyc_building.geojson";
+    // file download: https://data.cityofnewyork.us/Housing-Development/Shapefiles-and-base-map/2k7f-6s2k
+    std::string file_path = "/home/sheep/Downloads/nyc_building/geo_export_6f08c4fb-6554-4408-98c0-1ec36fae8c88.shp";
     float width = 1900;
     float height = 1410;
     std::string output_path = "offscreen.png";
