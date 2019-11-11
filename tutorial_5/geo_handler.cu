@@ -1,12 +1,11 @@
+#include <iostream>
+#include <fstream>
+
 #include <ogrsf_frmts.h>
 #include <gdal_utils.h>
-#include <fstream>
-#include <host_defines.h>
-#include <device_launch_parameters.h>
+
 #include <cuda_runtime.h>
-#include <iostream>
-
-
+#include <cuda.h>
 
 /************************************************************************/
 /**                                Invoker                             **/
@@ -18,16 +17,16 @@ class Invoker {
 
  public:
     void
-    set_point_x(std::vector<double> &point_x) { point_x_ = point_x; }
+    set_point_x(const std::vector<double> &point_x) { point_x_ = point_x; }
 
     void
-    set_point_y(std::vector<double> &point_y) { point_y_ = point_y; }
+    set_point_y(const std::vector<double> &point_y) { point_y_ = point_y; }
 
     void
-    set_polygon_vertex_x(std::vector<double> &polygon_vertex_x) { polygon_vertex_x_ = polygon_vertex_x; }
+    set_polygon_vertex_x(const std::vector<double> &polygon_vertex_x) { polygon_vertex_x_ = polygon_vertex_x; }
 
     void
-    set_polygon_vertex_y(std::vector<double> &polygon_vertex_y) { polygon_vertex_y_ = polygon_vertex_y; }
+    set_polygon_vertex_y(const std::vector<double> &polygon_vertex_y) { polygon_vertex_y_ = polygon_vertex_y; }
 
     const int64_t &
     count() const { return count_; }
@@ -256,8 +255,22 @@ void PolygonsLoader::LoadPolygons() {
 /**                                Handler                             **/
 /************************************************************************/
 class Handler {
+ public:
     void
     Handle();
+
+ public:
+    void
+    set_polygons(const std::vector<PolygonsLoader::Polygon> &polygons) { polygons_ = polygons; }
+
+    void
+    set_points_x(const std::vector<double> &points_x) { points_x_ = points_x; }
+
+    void
+    set_points_y(const std::vector<double> &points_y) { points_y_ = points_y; }
+
+    const std::vector<int64_t> &
+    counts() const { return counts_; }
 
  private:
     std::vector<PolygonsLoader::Polygon> polygons_;
@@ -290,6 +303,13 @@ class FeatureWriter {
     void
     Write();
 
+ public:
+    void
+    set_counts(const std::vector<int64_t> &counts) { counts_ = counts; }
+
+    void
+    set_file_path(const std::string &file_path) { file_path_ = file_path; }
+
  private:
     std::vector<int64_t> counts_;
     std::string file_path_;
@@ -314,7 +334,7 @@ void FeatureWriter::Write() {
     while ((poFeature = poLayer->GetNextFeature()) != nullptr) {
         auto poGeometry = poFeature->GetGeometryRef();
         if (poGeometry != nullptr && wkbFlatten(poGeometry->getGeometryType()) == wkbPolygon) {
-            poFeature->SetField("count", (GInt64)counts_[index]);
+            poFeature->SetField("count", (GInt64) counts_[index]);
         } else {
             printf("no geometry\n");
         }
@@ -337,6 +357,21 @@ int main() {
     PointsLoader points_loader;
     points_loader.set_file_path(pickup_longitude, pickup_latitude);
     points_loader.LoadPoints();
+
+    PolygonsLoader polygons_loader;
+    polygons_loader.set_file_path(file_path);
+    polygons_loader.LoadPolygons();
+
+    Handler handler;
+    handler.set_polygons(polygons_loader.polygons());
+    handler.set_points_x(points_loader.points_x());
+    handler.set_points_y(points_loader.points_y());
+    handler.Handle();
+
+    FeatureWriter feature_writer;
+    feature_writer.set_file_path(file_path);
+    feature_writer.set_counts(handler.counts());
+    feature_writer.Write();
 
     return 0;
 }
