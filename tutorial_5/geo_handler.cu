@@ -33,29 +33,39 @@ PointsInPolygonKernel(const double *dev_point_x,
     for (; index < num_points; index += blockDim.x * gridDim.x) {
         int winding_num = 0;
         double pnt_x = dev_point_x[index];
-        printf("pnt_x = %lf", pnt_x);
+//        printf("pnt_x = %lf\n", pnt_x);
         double pnt_y = dev_point_y[index];
-        printf("pnt_y = %lf", pnt_y);
+//        printf("pnt_y = %lf\n", pnt_y);
         double dx2 = poly_xs[num_polygon_vertexes - 1] - pnt_x;
-        printf("dx2 = %lf", dx2);
+//        printf("dx2 = %lf\n", dx2);
         double dy2 = poly_ys[num_polygon_vertexes - 1] - pnt_y;
+//        printf("dy2 = %lf\n", dy2);
         for (int poly_idx = 0; poly_idx < num_polygon_vertexes; ++poly_idx) {
             auto dx1 = dx2;
+//            printf("dx1 = %lf\n", dx1);
             auto dy1 = dy2;
+//            printf("dy1 = %lf\n", dy1);
             dx2 = poly_xs[poly_idx] - pnt_x;
+//            printf("dx2 = %lf\n", dx2);
             dy2 = poly_ys[poly_idx] - pnt_y;
+//            printf("dy2 = %lf\n", dy2);
             bool ref = dy1 < 0;
+//            printf("ref = %d\n", ref);
+//            printf("dy2 < 0 = %d\n", dy2 < 0);
             if (ref != (dy2 < 0)) {
-                printf("OK\n");
                 if (IsLeft(dx1, dy1, dx2, dy2) < 0 != ref) {
+//                    printf("OK\n");
                     winding_num += ref ? 1 : -1;
                 }
             }
         }
         if (winding_num != 0) {
+//            printf("OK\n");
             count++;
+//            printf("count=%ld",count);
         }
     }
+//    printf("count=%ld",count);
 }
 
 
@@ -77,11 +87,11 @@ void Invoker::PointsInPolygon() {
     cudaMemcpy(dev_polygon_vertex_x,
                &polygon_vertex_x_[0],
                sizeof(double) * polygon_vertex_x_.size(),
-               cudaMemcpyDeviceToHost);
+               cudaMemcpyHostToDevice);
     cudaMemcpy(dev_polygon_vertex_y,
                &polygon_vertex_y_[0],
                sizeof(double) * polygon_vertex_y_.size(),
-               cudaMemcpyDeviceToHost);
+               cudaMemcpyHostToDevice);
 
     auto shared_memory_bytes_requirement = sizeof(double) * 2 * polygon_vertex_y_.size();
     int grid_dim = 255;
