@@ -23,3 +23,4 @@ target_link_libraries(polygon_op gdal)
 target_link_libraries(gdal_opengl gdal GL EGL)
 
 add_subdirectory(tutorial_5)
+add_subdirectory(tutorial_6)

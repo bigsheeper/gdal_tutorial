@@ -174,7 +174,7 @@ void PolygonsLoader::LoadPolygons() {
 /************************************************************************/
 /**                                Handler                             **/
 /************************************************************************/
-void Handler::Handle() {
+void handler::Handle() {
 
     counts_.resize(polygons_.size());
 

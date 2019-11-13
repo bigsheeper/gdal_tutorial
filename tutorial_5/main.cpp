@@ -21,7 +21,7 @@ int main() {
     polygons_loader.set_file_path(file_path);
     polygons_loader.LoadPolygons();
 
-    Handler handler;
+    handler handler;
     handler.set_polygons(polygons_loader.polygons());
     handler.set_points_x(points_loader.points_x());
     handler.set_points_y(points_loader.points_y());
