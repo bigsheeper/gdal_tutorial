@@ -4,6 +4,14 @@
 
 class Handler {
  public:
+    struct RectangleBox  {
+        int min_x;
+        int min_y;
+        int max_x;
+        int max_y;
+    };
+
+ public:
     void
     GetRectangleBoxes();
 
@@ -48,16 +56,22 @@ class Handler {
     const std::vector<std::vector<int>> &
     vertices_c() const { return vertices_c_; }
 
+    const std::vector<int> &
+    src_vertices_x() const { return src_vertices_x_; }
+
+    const std::vector<int> &
+    src_vertices_y() const { return src_vertices_y_; }
+
+    const std::vector<int> &
+    src_vertices_c() const { return src_vertices_c_; }
+
+    const std::vector<RectangleBox> &
+    rectangle_boxes() const { return rectangle_boxes_; }
+
     const std::vector<std::vector<uint8_t>> &
     result() const { return result_; }
 
- private:
-    struct RectangleBox  {
-        int min_x;
-        int min_y;
-        int max_x;
-        int max_y;
-    };
+
 
  private:
     std::vector<int> src_vertices_x_;

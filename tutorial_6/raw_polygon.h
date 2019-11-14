@@ -35,6 +35,12 @@ class RawPolygon {
     const std::vector<std::vector<int>> &
     raw_polygons_ys() const { return raw_polygons_ys_; }
 
+    const std::vector<std::vector<double>> &
+    polygons_xs() const { return polygons_xs_; }
+
+    const std::vector<std::vector<double>> &
+    polygons_ys() const { return polygons_ys_; }
+
  private:
     std::string file_path_;
     BoundingBox bounding_box_;

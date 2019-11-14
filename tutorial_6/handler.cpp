@@ -63,8 +63,8 @@ void Handler::Calculate() {
 
         int* vertex_x;
         int* vertex_y;
-        cudaMalloc(&vertex_x, raw_polygons_xs_[i].size());
-        cudaMalloc(&vertex_y, raw_polygons_ys_[i].size());
+        cudaMalloc(&vertex_x, raw_polygons_xs_[i].size() * sizeof(int));
+        cudaMalloc(&vertex_y, raw_polygons_ys_[i].size() * sizeof(int));
         cudaMemcpy(vertex_x, &raw_polygons_xs_[i][0], raw_polygons_xs_[i].size() * sizeof(int), cudaMemcpyHostToDevice);
         cudaMemcpy(vertex_y, &raw_polygons_ys_[i][0], raw_polygons_ys_[i].size() * sizeof(int), cudaMemcpyHostToDevice);
 
@@ -74,8 +74,8 @@ void Handler::Calculate() {
         auto num_points = vertices_x_[i].size();
         auto num_ploygon_vertexes = raw_polygons_xs_[i].size();
         PointInPolygon(point_x, point_y, num_points, vertex_x, vertex_y, num_ploygon_vertexes, output);
-        result_[i].resize(num_points);
-        cudaMemcpy(&result_[i][0], output, num_points * sizeof(int), cudaMemcpyDeviceToHost);
+        result_[i].resize(vertices_x_[i].size());
+        cudaMemcpy(&result_[i][0], output, vertices_x_[i].size() * sizeof(uint8_t), cudaMemcpyDeviceToHost);
 
         cudaFree(point_x);
         cudaFree(point_y);

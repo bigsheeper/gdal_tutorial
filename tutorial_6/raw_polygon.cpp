@@ -26,6 +26,17 @@ void RawPolygon::TransForm() {
             raw_polygons_ys_[i][j] = ret_y;
         }
     }
+
+//    raw_polygons_xs_.resize(polygons_xs_.size());
+//    raw_polygons_ys_.resize(polygons_ys_.size());
+//    for (int i = 0; i < polygons_xs_.size(); i++) {
+//        raw_polygons_xs_[i].resize(polygons_xs_[i].size());
+//        raw_polygons_ys_[i].resize(polygons_ys_[i].size());
+//        for (int j = 0; j < polygons_xs_[i].size(); j++) {
+//            raw_polygons_xs_[i][j] = (int)polygons_xs_[i][j];
+//            raw_polygons_ys_[i][j] = (int)polygons_ys_[i][j];
+//        }
+//    }
 }
 
 void RawPolygon::Extract() {

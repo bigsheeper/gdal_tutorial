@@ -33,7 +33,6 @@ PIP_WindingNumber_kernel(const int* dev_point_xs,
         int winding_num = 0;
         int pnt_x = dev_point_xs[index];
         int pnt_y = dev_point_ys[index];
-        printf("pnt_y=%d\n",pnt_y);
         int dx2 = poly_xs[num_poly_vertexes - 1] - pnt_x;
         int dy2 = poly_ys[num_poly_vertexes - 1] - pnt_y;
         for (int poly_idx = 0; poly_idx < num_poly_vertexes; ++poly_idx) {
