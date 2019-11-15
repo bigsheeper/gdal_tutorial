@@ -1,4 +1,4 @@
-add_library(building_count raw_polygon.cpp handler.cpp point_in_polygon.cu)
+add_library(building_count raw_polygon.cpp handler.cpp point_in_polygon.cu kernel.cu)
 
 include_directories(${CUDA_INCLUDE})
 link_directories(${CUDA_LIB})

@@ -5,6 +5,8 @@
 
 #include "bounding_box.h"
 
+#define MAX_BUILDING_NUM 10000
+
 class RawPolygon {
  public:
     void

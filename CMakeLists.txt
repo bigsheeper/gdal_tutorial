@@ -7,7 +7,9 @@ set(CMAKE_CXX_STANDARD 14)
 find_package(CUDA REQUIRED)
 message("CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}")
 
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -fPIC -D_FORCE_INLINES -arch sm_60 --expt-extended-lambda")
+#set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -fPIC -D_FORCE_INLINES -arch sm_60 --expt-extended-lambda")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wno-unused-variable")
+set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -Xcompiler -fPIC -std=c++11 -D_FORCE_INLINES -arch sm_60 --expt-extended-lambda")
 
 set(CUDA_INCLUDE /usr/local/cuda/include)
 set(CUDA_LIB /usr/local/cuda/lib64)

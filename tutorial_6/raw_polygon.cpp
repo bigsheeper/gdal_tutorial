@@ -1,4 +1,7 @@
+#include <iostream>
 #include "raw_polygon.h"
+#include "kernel.h"
+
 
 void RawPolygon::TransForm() {
     double x_left = bounding_box_.longitude_left * 111319.490778;
@@ -6,6 +9,17 @@ void RawPolygon::TransForm() {
 
     double y_left = 6378136.99911 * log(tan(.00872664626 * bounding_box_.latitude_left + .785398163397));
     double y_right = 6378136.99911 * log(tan(.00872664626 * bounding_box_.latitude_right + .785398163397));
+
+//    CoordTrans(polygons_xs_,
+//               polygons_ys_,
+//               raw_polygons_xs_,
+//               raw_polygons_ys_,
+//               x_left,
+//               x_right,
+//               y_left,
+//               y_right,
+//               window_params_.width,
+//               window_params_.height);
 
     raw_polygons_xs_.resize(polygons_xs_.size());
     raw_polygons_ys_.resize(polygons_ys_.size());
@@ -51,8 +65,18 @@ void RawPolygon::Extract() {
     auto poLayer = ((GDALDataset *) poDS)->GetLayer(0);
 
     OGRFeature *poFeature;
-    poLayer->ResetReading();
 
+    poLayer->ResetReading();
+    int64_t building_nums = 0;
+    while ((poFeature = poLayer->GetNextFeature()) != nullptr) {
+        building_nums++;
+    }
+    if (building_nums > 10000) {
+        std::cout << "too many buildings.";
+        return;
+    }
+
+    poLayer->ResetReading();
     while ((poFeature = poLayer->GetNextFeature()) != nullptr) {
         auto poGeometry = poFeature->GetGeometryRef();
         if (poGeometry != nullptr && wkbFlatten(poGeometry->getGeometryType()) == wkbPolygon) {

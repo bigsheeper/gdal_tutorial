@@ -110,17 +110,17 @@ void Window2D::Render() {
     }
 
     // draw rectangles
-//    glColor4f(1.0, 0.0, 0.0, 0.8);
-//    glLineWidth(3);
-//    for (int i = 0; i < rectangle_boxes_.size(); i++) {
-//        glBegin(GL_LINES);
-//        glVertex2d(rectangle_boxes_[i].min_x, rectangle_boxes_[i].min_y);
-//        glVertex2d(rectangle_boxes_[i].max_x, rectangle_boxes_[i].min_y);
-//        glVertex2d(rectangle_boxes_[i].max_x, rectangle_boxes_[i].max_y);
-//        glVertex2d(rectangle_boxes_[i].max_x, rectangle_boxes_[i].min_y);
-//        glVertex2d(rectangle_boxes_[i].min_x, rectangle_boxes_[i].min_y);
-//        glEnd();
-//    }
+    glColor4f(1.0, 0.0, 0.0, 0.8);
+    glLineWidth(3);
+    for (int i = 0; i < rectangle_boxes_.size(); i++) {
+        glBegin(GL_LINES);
+        glVertex2d(rectangle_boxes_[i].min_x, rectangle_boxes_[i].min_y);
+        glVertex2d(rectangle_boxes_[i].max_x, rectangle_boxes_[i].min_y);
+        glVertex2d(rectangle_boxes_[i].max_x, rectangle_boxes_[i].max_y);
+        glVertex2d(rectangle_boxes_[i].max_x, rectangle_boxes_[i].min_y);
+        glVertex2d(rectangle_boxes_[i].min_x, rectangle_boxes_[i].min_y);
+        glEnd();
+    }
 
     //draw points
     glPointSize(2);
@@ -155,14 +155,14 @@ void Window2D::Output() {
 }
 
 
-const std::string file_path = "/home/sheep/Downloads/nyc_building/geo_export_6f08c4fb-6554-4408-98c0-1ec36fae8c88.shp";
-BoundingBox bounding_box{-74.532335,40.50033, -72.92947,41.16844};
+//const std::string file_path = "/home/sheep/Downloads/nyc_building/geo_export_6f08c4fb-6554-4408-98c0-1ec36fae8c88.shp";
+//BoundingBox bounding_box{-74.532335,40.50033, -72.92947,41.16844};
 
 //const std::string file_path = "/home/sheep/Downloads/nyc_building/jetro.shp";
 //BoundingBox bounding_box{-73.906453, 40.648398, -73.895470, 40.654291};
 
-//const std::string file_path = "/home/sheep/Downloads/nyc_building/nyc_trans.shp";
-//BoundingBox bounding_box{-74.01695, 40.701673, -73.97243, 40.722044};
+const std::string file_path = "/home/sheep/Downloads/nyc_building/nyc_trans.shp";
+BoundingBox bounding_box{-74.01695, 40.701673, -73.97243, 40.722044};
 
 WindowParams window_params{1900, 1410};
 const std::string output_path = "/home/sheep/polygon/offscreen.png";
@@ -248,7 +248,13 @@ int main() {
             test++;
         }
     }
-    std::cout << "test = " << test << std::endl;
+//    std::cout << "test = " << test << std::endl;
+//
+//    std::cout << "raw_polygons num = " << raw_polygon.raw_polygons_xs().size() << std::endl;
+//    std::cout << "Rectangle box num = " << handler.rectangle_boxes().size() << std::endl;
+//    std::cout << "src_vertices num = " << handler.src_vertices_x().size() << std::endl;
+//    std::cout << "vertices num = " << handler.vertices_x().size() << std::endl;
+//    std::cout << "result num = " << handler.result().size() << std::endl;
 
     Window2D window_2d;
     window_2d.width_ = window_params.width;

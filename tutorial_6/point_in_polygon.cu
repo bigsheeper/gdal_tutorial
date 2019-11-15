@@ -64,7 +64,7 @@ PointInPolygon_naive_fast(const int* point_x,
 
     auto shared_memory_bytes_requirement = sizeof(int) * 2 * num_poly_vertexes;
 
-    PIP_WindingNumber_kernel<<<64, 512, shared_memory_bytes_requirement>>>(point_x,
+    PIP_WindingNumber_kernel<<<256, 1024, shared_memory_bytes_requirement>>>(point_x,
                                          point_y,
                                          num_points,
                                          vertex_x,

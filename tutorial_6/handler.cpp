@@ -1,4 +1,5 @@
 #include <cuda_runtime.h>
+#include <iostream>
 #include "algorithm"
 #include "handler.h"
 #include "point_in_polygon.h"
@@ -22,31 +23,70 @@ void Handler::Filter() {
     vertices_x_.resize(rectangle_boxes_.size());
     vertices_y_.resize(rectangle_boxes_.size());
     vertices_c_.resize(rectangle_boxes_.size());
-
-    int box_index = 0;
-    for (auto rectangle_box : rectangle_boxes_) {
+    int push_count = 0;
+    for (int i = 0; i < rectangle_boxes_.size(); i++) {
         std::vector<int> x;
         std::vector<int> y;
         std::vector<int> c;
 
-        for (int i = 0; i < src_vertices_x_.size(); i++) {
-            if (src_vertices_x_[i] < rectangle_box.min_x) {
+        auto min_x = rectangle_boxes_[i].min_x;
+        auto min_y = rectangle_boxes_[i].min_y;
+        auto max_x = rectangle_boxes_[i].max_x;
+        auto max_y = rectangle_boxes_[i].max_y;
+
+        for (int j = 0; j < src_vertices_x_.size(); j++) {
+            if (src_vertices_x_[j] <= min_x) {
                 continue;
             }
-            if (src_vertices_x_[i] > rectangle_box.max_x) {
+            if (src_vertices_x_[j] >= max_x) {
                 break;
             }
-            if( src_vertices_y_[i] >= rectangle_box.min_y && src_vertices_y_[i] <= rectangle_box.max_y) {
-                x.emplace_back(src_vertices_x_[i]);
-                y.emplace_back(src_vertices_y_[i]);
-                c.emplace_back(src_vertices_c_[i]);
+            if(src_vertices_y_[j] > min_y && src_vertices_y_[j] < max_y) {
+                push_count++;
+                x.emplace_back(src_vertices_x_[j]);
+                y.emplace_back(src_vertices_y_[j]);
+                c.emplace_back(src_vertices_c_[j]);
             }
         }
 
-        vertices_x_[box_index] = x;
-        vertices_y_[box_index] = y;
-        vertices_c_[box_index++] = c;
+        if (x.empty()) {
+            continue;
+        }
+
+        vertices_x_[i] = x;
+        vertices_y_[i] = y;
+        vertices_c_[i] = c;
     }
+//    std::cout << "*********************push count = " << push_count << std::endl;
+
+//    int box_index = 0;
+//    for (auto rectangle_box : rectangle_boxes_) {
+//        std::vector<int> x;
+//        std::vector<int> y;
+//        std::vector<int> c;
+//
+//        for (int i = 0; i < src_vertices_x_.size(); i++) {
+//            if (src_vertices_x_[i] <= rectangle_box.min_x) {
+//                continue;
+//            }
+//            if (src_vertices_x_[i] >= rectangle_box.max_x) {
+//                break;
+//            }
+//            if( src_vertices_y_[i] > rectangle_box.min_y && src_vertices_y_[i] < rectangle_box.max_y) {
+//                x.emplace_back(src_vertices_x_[i]);
+//                y.emplace_back(src_vertices_y_[i]);
+//                c.emplace_back(src_vertices_c_[i]);
+//            }
+//        }
+//
+//        if (x.empty()) {
+//            continue;
+//        }
+//
+//        vertices_x_[box_index] = x;
+//        vertices_y_[box_index] = y;
+//        vertices_c_[box_index++] = c;
+//    }
 }
 
 void Handler::Calculate() {
@@ -54,6 +94,7 @@ void Handler::Calculate() {
     result_.resize(raw_polygons_xs_.size());
 
     for (int i = 0; i < raw_polygons_xs_.size(); i++) {
+//        std::cout << "vertices_x_[" << i << "].size() = " <<  vertices_x_[i].size() << std::endl;
         int* point_x;
         int* point_y;
         cudaMalloc(&point_x, vertices_x_[i].size() * sizeof(int));
