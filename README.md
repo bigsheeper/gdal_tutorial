@@ -25,3 +25,17 @@
 `$ ogr2ogr -f GeoJSON point.geojson point.shp`
 
 ### 6.About polygon -- [reference](http://esri.github.io/geometry-api-java/doc/Polygon.html) -- [reference](https://github.com/Esri/geometry-api-java/wiki)
+
+
+### 7. Coordinates transform.
+   In this situation you will need to find out what coordinate system your data is in. If the data has a coordinate system assigned you can issue a command like that below to convert the data (note that the destination file is specified before the source file):
+
+`$ ogr2ogr -t_srs EPSG:4326 new_datafile.shp datafile.shp`
+
+   If your data set does not have a coordinate system assigned to it but you have found out what it is you can specify the source coordinate system on the command line with the parameter -s_srs, for example:
+
+`$ ogr2ogr -s_srs EPSG:27700 -t_srs EPSG:4326 new_datafile.shp datafile.shp`
+
+   After that, you will have to reproject your file to EPSG:4326 (latitudes and longitudes):
+
+`$ ogr2ogr -t_srs EPSG:4326 nyu_2451_34498_4326.shp nyu_2451_34498_3857.shp`

@@ -18,11 +18,13 @@ add_executable(gdal_org tutorial_1/gdal_org_read_and_write.cpp)
 add_executable(translate tutorial_2/translate.cpp)
 add_executable(polygon_op tutorial_3/polygon_op.cpp)
 add_executable(gdal_opengl tutorial_4/gdal_opengl.cpp)
+add_executable(level_support tutorial_7/level_support.cpp)
 
 target_link_libraries(gdal_org gdal)
 target_link_libraries(translate gdal)
 target_link_libraries(polygon_op gdal)
 target_link_libraries(gdal_opengl gdal GL EGL)
+target_link_libraries(level_support gdal GL EGL)
 
 add_subdirectory(tutorial_5)
 add_subdirectory(tutorial_6)
